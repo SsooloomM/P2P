@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
 
 public class Member implements Runnable{
     private InetAddress global_address;
@@ -7,6 +8,8 @@ public class Member implements Runnable{
 
     private Thread t;
     private String threadName;
+    private ArrayList<SingleConnection> allMembers;
+    private Server server;
     MulticastSocket clientSocket;
 
     final private int PORT = 8888;
@@ -17,6 +20,7 @@ public class Member implements Runnable{
         this.global_address = InetAddress.getByName(INET_ADDR);
         this.clientSocket = new MulticastSocket(this.PORT);
         this.clientSocket.joinGroup(this.global_address);
+        server = new Server(my_address);
     }
 
     @Override
@@ -31,10 +35,13 @@ public class Member implements Runnable{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                String msg = new String(buffer, 0, buffer.length);
-                if(msg.trim().equals(my_address)) continue;
-
-                System.out.println("new Address: " + msg);
+                String msg = new String(buffer, 0, buffer.length).trim();
+                if(msg.equals(my_address)) continue;
+                try {
+                    allMembers.add(new SingleConnection(msg));
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
             }
 
     }
